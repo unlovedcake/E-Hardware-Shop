@@ -47,7 +47,7 @@ class AuthenticatedSessionController extends Controller
         }
 
 
-        return redirect()->intended(route('guest'));
+        return redirect()->intended(route('home'));
     }
 
     /**

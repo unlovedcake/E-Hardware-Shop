@@ -6,6 +6,7 @@ import { onMounted, ref, reactive, computed, watch, watchEffect } from "vue";
 import { initFlowbite } from "flowbite";
 import Pagination from "@/Components/Pagination.vue";
 import ModalCreate from "@/Components/Modal.vue";
+import TableComponent from "@/Components/TableComponent.vue";
 import { useToast } from "vue-toastification";
 import Swal from "sweetalert2";
 
@@ -31,8 +32,14 @@ const props = defineProps({
     },
 });
 
+const headers = ref(["ID", "Name", "User Type"]);
+
 onMounted(() => {
     initFlowbite();
+
+    Object.entries(props.users).forEach(([key, val]) => {
+        console.log("PROD" + val);
+    });
 });
 
 let userUrl = computed(() => {
@@ -520,7 +527,8 @@ const closeModal = () => {
                     </div>
                 </div>
                 <div class="overflow-x-auto">
-                    <table
+                    <TableComponent :headers="headers" :users="users" />
+                    <!-- <table
                         class="w-full text-sm text-left text-gray-500 dark:text-gray-400"
                     >
                         <thead
@@ -659,7 +667,7 @@ const closeModal = () => {
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table> -->
 
                     <Pagination class="mt-4" :links="users.links" />
                 </div>

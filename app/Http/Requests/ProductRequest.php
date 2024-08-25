@@ -31,8 +31,8 @@ class ProductRequest extends FormRequest
             'image.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'required|exists:categories,id',
-            'images' => 'sometimes|array',
-            'images.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'images' => 'sometimes|object|array',
+            'images.*' => 'sometimes|object|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
 
         ];
     }

@@ -17,7 +17,7 @@ class Admin
     {
         if (Auth()->user()->user_type != 'admin') {
 
-            return redirect('guest');
+            return redirect('home');
         }
         return $next($request);
     }

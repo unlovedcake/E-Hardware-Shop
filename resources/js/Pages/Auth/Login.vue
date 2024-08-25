@@ -29,6 +29,7 @@ const form = useForm({
 });
 
 const submit = () => {
+    sessionStorage.clear();
     form.post(route("login"), {
         onFinish: () => form.reset("password"),
     });
@@ -97,7 +98,7 @@ function closeModal() {
                 </Link>
 
                 <PrimaryButton
-                    class="ms-4"
+                    class="ms-4 bg-black"
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
