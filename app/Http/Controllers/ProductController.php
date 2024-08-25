@@ -24,17 +24,19 @@ class ProductController extends Controller
         $searchVal = $request->searchValue;
 
         $filterCategory = $request->filterCategoryName;
-        $filterBrand
-            = $request->filterBrandName;
+        $filterBrand   = $request->filterBrandName;
 
         $categories = Category::all();
         $brands = Brand::all();
 
 
 
+        //Convert to array
         if ($filterCategory && !is_array($filterCategory) || $filterBrand && !is_array($filterBrand)) {
             $filterCategory = explode(',', $filterCategory);
             $filterBrand = explode(',', $filterBrand);
+
+            //dd($filterCategory);
         }
 
 
@@ -43,41 +45,12 @@ class ProductController extends Controller
             $products = Product::select('id', 'name', 'image', 'description', 'price', 'quantity', 'brand_id', 'category_id')
                 ->with(['category:id,name', 'brand:id,name'])
                 ->paginate(6);
-            //$products = Product::select('id', 'name', 'description', 'price', 'quantity', 'brand_id', 'category_id')->paginate(2);
         } else if ($filterCategory || $filterBrand) {
 
-
-            $products = Product::select('id', 'name', 'image', 'description', 'price', 'quantity', 'brand_id', 'category_id')->with(['category:id,name', 'brand:id,name'])
-                ->orWhereHas('category', function ($query) use ($filterCategory) {
-                    $query->whereIn('categories.name',  $filterCategory);
-                })
-                ->orWhereHas('brand', function ($query) use (
-                    $filterBrand
-                ) {
-                    $query->whereIn(
-                        'brands.name',
-                        $filterBrand
-                    );
-                })
-                ->paginate(5);
+            $products = $this->filterProduct($filterCategory, $filterBrand);
         } else {
-            // $products = Product::select('id', 'name', 'image', 'description', 'price', 'quantity', 'brand_id', 'category_id')->whereAny(['name', 'category_name'], 'LIKE', '%' . $searchVal . '%')->paginate(2);
 
-
-
-            // $products = Product::select('id', 'name', 'image', 'description', 'price', 'quantity', 'brand_id', 'category_id')
-            //     ->with(['category:id,name', 'brand:id,name'])
-            //     ->whereAny(['name'], 'LIKE', '%' . $searchVal . '%')->paginate(2);
-
-            $products = Product::select('id', 'name', 'image', 'description', 'price', 'quantity', 'brand_id', 'category_id')->with(['category:id,name', 'brand:id,name'])
-                ->where('products.name', 'like', '%' . $searchVal . '%')
-                ->orWhereHas('category', function ($query) use ($searchVal) {
-                    $query->where('categories.name', 'like', '%' . $searchVal . '%');
-                })
-                ->orWhereHas('brand', function ($query) use ($searchVal) {
-                    $query->where('brands.name', 'like', '%' . $searchVal . '%');
-                })
-                ->paginate(5);
+            $products = $this->searchProduct($searchVal);
         }
 
         return Inertia::render('Product/Index', ['products' => $products, 'categories' => $categories, 'brands' => $brands, 'searchTextFilter' => $searchVal]);
@@ -92,7 +65,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'quantity' => 'required|numeric|min:1',
-            'image' => 'nullable|array',
+            'image' => 'nullable|array|max:3',
             'image.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
@@ -102,7 +75,7 @@ class ProductController extends Controller
         $path = 'uploads/product/';
 
 
-        if ($request->has('image')) {
+        if ($request->has('image') && $request->image != null) {
             $productImages = $request->file('image');
             foreach ($productImages as $image) {
                 // Generate a unique name for the image using timestamp and random string
@@ -122,7 +95,7 @@ class ProductController extends Controller
             'description' => $request->description,
             'price' => $request->price,
             'quantity' => $request->quantity,
-            'image' => $images,
+            'image' => $request->image == null ? ['storage/uploads/default.png'] : $images
         ]);
     }
 
@@ -130,7 +103,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|max:255',
-            // 'image' => 'nullable|array',
+            // 'image' => 'nullable|array|max:3',
             // 'image.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
 
 
@@ -203,7 +176,15 @@ class ProductController extends Controller
     public function delete($id)
 
     {
-        $category = Product::findOrFail($id);
-        $category->delete();
+        $product = Product::findOrFail($id);
+        $product->delete();
+    }
+
+    public function getProduct($id)
+
+    {
+        $product = Product::findOrFail($id);
+
+        return response()->json($product);
     }
 }

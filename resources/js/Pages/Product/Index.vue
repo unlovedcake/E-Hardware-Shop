@@ -118,20 +118,21 @@ const form = useForm({
 });
 
 const handleRemove = (file, fileList) => {
-    const removedIndex = file.index;
     const removedUrl = file.url;
 
-    form.index.push(removedIndex);
     if (removedUrl.includes("storage/uploads")) {
         form.url.push(removedUrl);
         console.log(`Removed file: ${removedUrl}`);
+    } else {
+        productUpdateImages.value.pop(file);
+        console.log(` productImages.value: ${productImages.value}`);
+        console.log(` productUpdateImages.value: ${productUpdateImages.value}`);
     }
 };
 const handleFileChange = (file) => {
     if (isImagesUpdate.value) {
         productUpdateImages.value.push(file);
         productUpdateImages.value = [...new Set(productUpdateImages.value)];
-        console.log("IsImagesUpdate");
     } else {
         productImages.value.push(file);
 
@@ -139,6 +140,8 @@ const handleFileChange = (file) => {
 
         console.log("Selected Images:" + productImages.value[0].raw);
     }
+
+    console.log("IsImagesUpdate" + productUpdateImages.value);
 
     // for (const image of productImages.value) {
     //     const formData = new FormData();
@@ -209,9 +212,6 @@ const addProduct = () => {
     for (const image of productImages.value) {
         form.image.push(image.raw);
     }
-    console.log(
-        `Brand Name: ${form.name}, Image: ${form.image}, Category ID: ${selectedCategoryId.value},Brand ID: ${selectedBrandId.value}`
-    );
     form.post("/product/store", {
         onError: (error) => {
             console.log("Error" + error);
@@ -224,6 +224,7 @@ const addProduct = () => {
             isOpenCreateModal.value = false;
             dialogImageUrl.value = "";
             productImages.value = [];
+            productUpdateImages.value = [];
             form.reset();
         },
     });
@@ -266,6 +267,7 @@ const editButton = (product) => {
 
 const updateProduct = () => {
     if (productUpdateImages.value) {
+        form.image = [];
         for (const image of productUpdateImages.value) {
             form.image.push(image.raw);
         }
@@ -290,6 +292,7 @@ const updateProduct = () => {
                 timeout: 2000,
             });
             form.url = [];
+            form.reset();
             productUpdateImages.value = [];
             productImages.value = [];
             isOpenUpdateModal.value = false;
@@ -364,15 +367,6 @@ function filterCategory(e) {
         filterCategoryName.value = filterCat;
 
         routeFilterCategory("filterCategoryName", filterCategoryName.value);
-        // url.searchParams.append("filterCategoryName", filterCat);
-        // console.log(filterCategoryName.value);
-        // console.log(url);
-
-        // router.visit(url, {
-        //     preserveScroll: true,
-        //     preserveState: true,
-        //     replace: true,
-        // });
     }
     if (e.target.checked == false) {
         filterName = e.target.value;
@@ -388,23 +382,7 @@ function filterCategory(e) {
         filterCategoryName.value = filterCat;
 
         routeFilterCategory("filterCategoryName", filterCategoryName.value);
-        // console.log(e.target.checked);
-        // console.log(e.target.value);
-        // filterName = "";
-        // url.searchParams.append("filterCategoryName", filterCat);
-        // console.log(filterCategoryName.value);
-        // console.log(url);
-
-        // router.visit(url, {
-        //     preserveScroll: true,
-        //     preserveState: true,
-        //     replace: true,
-        // });
     }
-}
-
-function sample() {
-    console.log("Sample");
 }
 
 function filterBrand(e) {
@@ -417,13 +395,6 @@ function filterBrand(e) {
         console.log("filter brand" + filterBran);
 
         routeFilterBrand("filterBrandName", filterBran);
-        // url.searchParams.append("filterBrandName", filterBran);
-
-        // router.visit(url, {
-        //     preserveScroll: true,
-        //     preserveState: true,
-        //     replace: true,
-        // });
     } else {
         filterName = e.target.value;
 
@@ -433,14 +404,6 @@ function filterBrand(e) {
             filterBran.splice(index, 1);
         }
         console.log("filter brand" + filterBran);
-
-        // url.searchParams.append("filterBrandName", filterBran);
-
-        // router.visit(url, {
-        //     preserveScroll: true,
-        //     preserveState: true,
-        //     replace: true,
-        // });
 
         routeFilterBrand("filterBrandName", filterBran);
     }
@@ -453,15 +416,6 @@ const fetchCategoryName = () => {
     const categoryName = selectedCategory ? selectedCategory.name : "";
 
     form.category_id = selectedCategoryId.value;
-
-    // form.product.category.name = categoryName;
-    // form.product.category.id = selectedCategoryId.value;
-
-    // form.category_id = form.product.category.id;
-
-    // console.log(
-    //     `Category Name: ${form.product.category.name}, Category ID: ${form.product.category.id}`
-    // );
 };
 
 const fetchBrandName = () => {
@@ -473,15 +427,6 @@ const fetchBrandName = () => {
     console.log(brandName + selectedBrandId.value);
 
     form.brand_id = selectedBrandId.value;
-
-    // form.product.category.name = brandName;
-    // form.product.brand.id = selectedBrandId.value;
-
-    // form.brand_id = form.product.brand.id;
-
-    // console.log(
-    //     `Brand Name: ${form.product.category.name}, Brand ID: ${form.product.brand.id}`
-    // );
 };
 
 watch(
@@ -681,183 +626,6 @@ const closeModal = () => {
                                     </li>
                                 </ul>
                             </div>
-
-                            <!-- <div
-                                id="filterDropdown"
-                                class="z-10 hidden w-56 p-3 bg-white rounded-lg shadow dark:bg-gray-700"
-                            >
-                                <h6
-                                    class="mb-3 text-sm font-medium text-gray-900 dark:text-white"
-                                >
-                                    Category
-                                </h6>
-                                <ul
-                                    class="space-y-2 text-sm"
-                                    aria-labelledby="filterDropdownButton"
-                                >
-                                    <li class="flex items-center">
-                                        <input
-                                            id="apple"
-                                            type="checkbox"
-                                            value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                        />
-                                        <label
-                                            for="apple"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            >Apple (56)</label
-                                        >
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input
-                                            id="fitbit"
-                                            type="checkbox"
-                                            value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                        />
-                                        <label
-                                            for="fitbit"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            >Fitbit (56)</label
-                                        >
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input
-                                            id="dell"
-                                            type="checkbox"
-                                            value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                        />
-                                        <label
-                                            for="dell"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            >Dell (56)</label
-                                        >
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input
-                                            id="asus"
-                                            type="checkbox"
-                                            value=""
-                                            checked=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                        />
-                                        <label
-                                            for="asus"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            >Asus (97)</label
-                                        >
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input
-                                            id="logitech"
-                                            type="checkbox"
-                                            value=""
-                                            checked=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                        />
-                                        <label
-                                            for="logitech"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            >Logitech (97)</label
-                                        >
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input
-                                            id="msi"
-                                            type="checkbox"
-                                            value=""
-                                            checked=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                        />
-                                        <label
-                                            for="msi"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            >MSI (97)</label
-                                        >
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input
-                                            id="bosch"
-                                            type="checkbox"
-                                            value=""
-                                            checked=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                        />
-                                        <label
-                                            for="bosch"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            >Bosch (176)</label
-                                        >
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input
-                                            id="sony"
-                                            type="checkbox"
-                                            value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                        />
-                                        <label
-                                            for="sony"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            >Sony (234)</label
-                                        >
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input
-                                            id="samsung"
-                                            type="checkbox"
-                                            value=""
-                                            checked=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                        />
-                                        <label
-                                            for="samsung"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            >Samsung (76)</label
-                                        >
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input
-                                            id="canon"
-                                            type="checkbox"
-                                            value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                        />
-                                        <label
-                                            for="canon"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            >Canon (49)</label
-                                        >
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input
-                                            id="microsoft"
-                                            type="checkbox"
-                                            value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                        />
-                                        <label
-                                            for="microsoft"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            >Microsoft (45)</label
-                                        >
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input
-                                            id="razor"
-                                            type="checkbox"
-                                            value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                                        />
-                                        <label
-                                            for="razor"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            >Razor (49)</label
-                                        >
-                                    </li>
-                                </ul>
-                            </div> -->
                         </div>
                     </div>
                 </div>
@@ -1302,6 +1070,8 @@ const closeModal = () => {
                         </div>
                         <button
                             type="submit"
+                            :class="{ 'opacity-25': form.processing }"
+                            :disabled="form.processing"
                             class="text-white bg-gradient-to-l from-blue-500 via-blue-600 to-blue-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                         >
                             Add New Product

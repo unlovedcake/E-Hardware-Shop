@@ -1,8 +1,11 @@
 <?php
 
 use Inertia\Inertia;
+use App\Models\Product;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ProductController;
@@ -21,6 +24,13 @@ Route::get('/', function () {
 Route::get('/guest', function () {
     return Inertia::render('Guest');
 })->name('guest');
+
+
+Route::get('/home', [HomeController::class, 'index'])->middleware(['auth', 'verified'])->name('home');
+
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::get('/cart/add/{id}', [CartController::class, 'addToCart'])->name('cart.add');
+Route::get('/cart/remove/{id}', [CartController::class, 'removeFromCart'])->name('cart.remove');
 
 
 Route::get('/dashboard', function () {
@@ -49,7 +59,7 @@ Route::prefix('/brand')->controller(BrandController::class)
 
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
 
     Route::put('/user/deactivate/{id}', [AdminController::class, 'deactivate'])->name('user.deactivate');
@@ -58,6 +68,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/user', [ProfileController::class, 'index'])->name('user.index');
 
     Route::get('/product', [ProductController::class, 'index'])->name('product.index');
+    Route::get('/product/{id}', [ProductController::class, 'getProduct']);
     Route::post('/product/store', [ProductController::class, 'store'])->name('product.store');
     Route::post('/product/update/{id}', [ProductController::class, 'update'])->name('product.update');
     Route::delete('/product/delete/{id}', [ProductController::class, 'delete'])->name('product.delete');
