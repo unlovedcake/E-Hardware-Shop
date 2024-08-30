@@ -2,6 +2,7 @@
 
 use Inertia\Inertia;
 use App\Models\Product;
+use App\Models\TransactionCart;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use App\Http\Controllers\CartController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\TransactionCartController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -25,6 +27,9 @@ Route::get('/guest', function () {
     return Inertia::render('Guest');
 })->name('guest');
 
+
+Route::post('/products/{product}/heart', [ProductController::class, 'heart'])->middleware('auth');
+Route::post('/checkout', [TransactionCartController::class, 'store'])->name('checkout.store')->middleware('auth');
 
 Route::get('/home', [HomeController::class, 'index'])->middleware(['auth', 'verified'])->name('home');
 
@@ -58,6 +63,15 @@ Route::prefix('/brand')->controller(BrandController::class)
     });
 
 
+Route::middleware(['auth', 'verified'])->group(function () {
+
+
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
@@ -83,11 +97,6 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     // Route::put('/category/update/{id}', [CategoryController::class, 'update'])->name('category.update');
     // Route::delete('/category/delete/{id}', [CategoryController::class, 'delete'])->name('category.delete');
 
-
-
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__ . '/auth.php';

@@ -31,7 +31,10 @@ const props = defineProps({
         type: [String],
     },
     products: {
-        type: [Object],
+        type: [Array, Object],
+    },
+    hearts: {
+        type: [Array],
     },
     categories: {
         type: Array,
@@ -48,7 +51,14 @@ const props = defineProps({
     cartItems: {
         type: [Object, Array],
     },
+
+    initialHearted: {
+        type: Boolean,
+        default: false,
+    },
 });
+
+const isHearted = ref(props.hearts);
 
 const searchValue = ref(usePage().props.searchTextFilter),
     pageNumber = ref(1);
@@ -92,6 +102,23 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener("scroll", handleScroll);
 });
+
+async function toggleHeart(productId) {
+    try {
+        const response = await axios.post(`/products/${productId}/heart`);
+
+        if (isHearted.value.includes(productId)) {
+            isHearted.value = isHearted.value.filter(
+                (number) => number !== productId
+            );
+        } else {
+            isHearted.value.push(productId);
+        }
+        console.log("Ishearted", isHearted.value);
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 let productUrl = computed(() => {
     let url = new URL(route("home"));
@@ -628,7 +655,7 @@ function filterBrand(e) {
                         <div
                             v-for="product in products.data"
                             :key="product.id"
-                            class="bg-white shadow-md rounded-lg overflow-hidden transform transition duration-500 hover:scale-105"
+                            class="relative bg-white shadow-md rounded-lg overflow-hidden transform transition duration-500 hover:scale-105"
                         >
                             <img
                                 :src="product.image[0]"
@@ -642,12 +669,62 @@ function filterBrand(e) {
                                 <p class="text-gray-600">
                                     {{ product.brand.name }}
                                 </p>
+                                <div class="p-2 absolute top-1 right-2">
+                                    <button @click="toggleHeart(product.id)">
+                                        <span
+                                            v-if="
+                                                isHearted.includes(product.id)
+                                            "
+                                            ><svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke-width="1.5"
+                                                stroke="currentColor"
+                                                class="w-6 h-6 text-red-500"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                                                /></svg
+                                        ></span>
+                                        <span v-else
+                                            ><svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke-width="1.5"
+                                                stroke="currentColor"
+                                                class="w-6 h-6 text-gray-500"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                                                /></svg
+                                        ></span>
+                                    </button>
+                                </div>
                                 <div class="mt-4 mb-2">
                                     <span class="text-lg font-bold">{{
-                                        product.category.name
+                                        product.price
                                     }}</span>
 
                                     <button
+                                        v-if="product.quantity === 0"
+                                        :disabled="product.quantity === 0"
+                                        class="bg-blue text-white py-2 px-4 rounded-lg float-right"
+                                        :class="{
+                                            'bg-red-500':
+                                                product.quantity === 0,
+                                        }"
+                                    >
+                                        Out of Stack
+                                    </button>
+
+                                    <button
+                                        v-else
                                         :disabled="
                                             state.cartItems.includes(product.id)
                                         "

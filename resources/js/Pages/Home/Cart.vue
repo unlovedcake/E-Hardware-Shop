@@ -15,22 +15,24 @@
                     :key="item.id"
                     class="flex items-center border-b border-gray-200 py-4"
                 >
-                    <!-- <img :src="item.product.image" alt="Product Image" class="w-24 h-24 object-cover rounded-lg mr-4"/> -->
+                    <div
+                        class="mr-3 relative w-32 h-32 overflow-hidden border-2 border-black-600 fade-in"
+                    >
+                        <img
+                            :src="item.image"
+                            alt="Profile Image"
+                            class="object-contain w-full h-full"
+                        />
+                    </div>
+
                     <div class="flex-1">
                         <h2 class="text-lg font-semibold">{{ item.name }}</h2>
                         <p class="text-gray-500">{{ item.description }}</p>
-                        <div class="flex items-center mt-2">
-                            <p class="text-gray-700">
-                                Quantity: {{ item.quantity }}
-                            </p>
-                            <p class="ml-4 text-gray-700">
-                                Price: ${{ item.price }}
-                            </p>
-
-                            <p class="ml-4 text-gray-700">
-                                Sum: ${{ item.price * item.quantity }}
-                            </p>
-                        </div>
+                        <p class="text-black">Price: ${{ item.price }}</p>
+                        <p class="text-black">
+                            Quantity: {{ item.available_quantity }}
+                        </p>
+                        <InputError class="mt-2" :message="item.message" />
                     </div>
                     <div class="flex items-center mt-2">
                         <button
@@ -58,10 +60,16 @@
                         Remove
                     </button>
                 </div>
+
                 <div class="mt-6 text-right">
                     <p class="text-lg font-semibold">Total: ${{ totalSum }}</p>
                 </div>
             </div>
+        </div>
+
+        <div>
+            <!-- Button that triggers the checkout function -->
+            <button @click="checkout" class="btn btn-primary">Checkout</button>
         </div>
 
         <!-- <div>
@@ -87,12 +95,14 @@
 import { Head, useForm, router } from "@inertiajs/vue3";
 import Nav from "@/Layouts/Nav.vue";
 import { store, useCartStore, state } from "../../store.js";
+import InputError from "@/Components/InputError.vue";
+import axios from "axios";
 
 import { onMounted, ref, reactive, computed, watch, watchEffect } from "vue";
 
 const props = defineProps({
     carts: {
-        type: [Object],
+        type: [Array],
     },
 
     cartCountItems: {
@@ -154,6 +164,24 @@ function updateProductQuantity(product, action) {
     if (product.quantity <= 1 && action == "decrement") {
         return;
     }
+
+    if (
+        product.quantity == product.available_quantity &&
+        action == "increment"
+    ) {
+        Object.keys(props.carts).forEach((key) => {
+            if (props.carts[key].id == product.id) {
+                props.carts[key].message =
+                    "Sorry, we have only " +
+                    product.available_quantity +
+                    " available for this item " +
+                    product.name;
+                console.log("cartItemsLength");
+            }
+        });
+
+        return;
+    }
     form.id = product.id;
     // form.description = product.description;
     // form.price = product.price;
@@ -172,6 +200,40 @@ function updateProductQuantity(product, action) {
             onSuccess: () => {},
         }
     );
+}
+let cartItems = [];
+async function checkout() {
+    Object.keys(props.carts).forEach((key) => {
+        cartItems.push({
+            product_id: parseInt(props.carts[key].id),
+            price: parseFloat(props.carts[key].price),
+            quantity: parseInt(props.carts[key].quantity),
+            name: props.carts[key].name,
+
+            brand_name: props.carts[key].brand_name,
+            category_name: props.carts[key].category_name,
+            description: props.carts[key].description,
+
+            total:
+                parseFloat(props.carts[key].price) *
+                parseInt(props.carts[key].quantity),
+            image: props.carts[key].image,
+        });
+    });
+
+    try {
+        const response = await axios.post("/checkout", {
+            cart_items: cartItems,
+            // headers: {
+            //     "Content-Type": "application/json",
+            // },
+        });
+        console.log("Checkout successful:", response.data);
+        // Handle success (e.g., redirect, show message)
+    } catch (error) {
+        console.error("Checkout failed:", error.response.data);
+        // Handle error (e.g., show error message)
+    }
 }
 
 const removeFromCart = (id) => {

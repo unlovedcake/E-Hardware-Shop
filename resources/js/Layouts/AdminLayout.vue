@@ -90,7 +90,7 @@ defineProps({
                                 >Windster</span
                             >
                         </a>
-                        <form
+                        <!-- <form
                             action="#"
                             method="GET"
                             class="hidden lg:block lg:pl-32"
@@ -123,7 +123,7 @@ defineProps({
                                     placeholder="Search"
                                 />
                             </div>
-                        </form>
+                        </form> -->
                     </div>
 
                     <div class="flex items-center">

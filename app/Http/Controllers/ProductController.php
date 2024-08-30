@@ -29,14 +29,10 @@ class ProductController extends Controller
         $categories = Category::all();
         $brands = Brand::all();
 
-
-
         //Convert to array
         if ($filterCategory && !is_array($filterCategory) || $filterBrand && !is_array($filterBrand)) {
             $filterCategory = explode(',', $filterCategory);
             $filterBrand = explode(',', $filterBrand);
-
-            //dd($filterCategory);
         }
 
 
@@ -186,5 +182,19 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
 
         return response()->json($product);
+    }
+
+    public function heart(Product $product)
+    {
+
+        $user = \Auth::user();
+
+        if ($product->isHeartedBy($user)) {
+            $product->hearts()->where('user_id', $user->id)->delete();
+            return response()->json(['status' => 'unhearted']);
+        } else {
+            $product->hearts()->create(['user_id' => $user->id, 'product_id' => $product->id]);
+            return response()->json(['status' => 'hearted']);
+        }
     }
 }

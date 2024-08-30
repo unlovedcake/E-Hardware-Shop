@@ -24,7 +24,7 @@ trait ProductTrait
             ->orWhereHas('brand', function ($query) use ($searchVal) {
                 $query->where('brands.name', 'like', '%' . $searchVal . '%');
             })
-            ->paginate();
+            ->paginate(6)->withQueryString();
 
 
         return $products;
@@ -47,6 +47,7 @@ trait ProductTrait
                 );
             })
             ->paginate(8);
+
         return $products;
     }
 }

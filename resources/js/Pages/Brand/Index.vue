@@ -570,7 +570,28 @@ const closeModal = () => {
                             </tr>
                         </tbody>
                     </table>
-                    <Pagination class="mt-4" :links="brands.links" />
+                    <nav
+                        class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
+                        aria-label="Table navigation"
+                    >
+                        <span
+                            class="text-sm font-normal text-gray-500 dark:text-gray-400"
+                        >
+                            Showing
+                            <span
+                                class="font-semibold text-gray-900 dark:text-white"
+                                >{{ brands.current_page }}-{{
+                                    brands.per_page
+                                }}</span
+                            >
+                            of
+                            <span
+                                class="font-semibold text-gray-900 dark:text-white"
+                                >{{ brands.total }}</span
+                            >
+                        </span>
+                        <Pagination class="mt-4" :links="brands.links" />
+                    </nav>
                 </div>
             </div>
         </div>

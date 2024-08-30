@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use App\Models\Brand;
+use App\Models\Heart;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
@@ -25,6 +26,15 @@ class HomeController extends Controller
 
         $categories = Category::all();
         $brands = Brand::all();
+        $loggedInUserId = \Auth::id();
+
+        // Query the 'heart' table to get all user_ids where user_id matches the logged-in user's ID
+        $hearts = Heart::where('user_id', $loggedInUserId)
+            ->pluck('product_id') // Get only the 'user_id' column
+            ->toArray(); // Convert the collection to an array
+
+
+
 
 
 
@@ -55,9 +65,10 @@ class HomeController extends Controller
             return response()->json($products);
         } else {
             $products = Product::select('id', 'name', 'image', 'description', 'price', 'quantity', 'brand_id', 'category_id')
-                ->with(['category:id,name', 'brand:id,name'])
+                ->with(['hearts:id,user_id,product_id', 'category:id,name', 'brand:id,name'])
                 ->paginate(4);
         }
+
 
 
         $cart = session()->get('cart', []);
@@ -66,6 +77,6 @@ class HomeController extends Controller
 
         $cartCount = count($cart);
 
-        return Inertia::render('Home/Home', ['searchTextFilter' => $searchVal, 'nextPageUrl' => $products->nextPageUrl(), 'products' => $products,  'cartCountItems' => $cartCount, 'cartItems' => $cart,  'categories' => $categories, 'brands' => $brands,]);
+        return Inertia::render('Home/Home', ['searchTextFilter' => $searchVal, 'nextPageUrl' => $products->nextPageUrl(), 'hearts' => $hearts, 'products' => $products,  'cartCountItems' => $cartCount, 'cartItems' => $cart,  'categories' => $categories, 'brands' => $brands,]);
     }
 }

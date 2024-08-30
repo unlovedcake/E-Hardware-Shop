@@ -151,5 +151,13 @@ function closeModal() {
                 </div>
             </div>
         </div>
+        <p class="text-gray-600 text-center mt-6">
+            Don't have an account?
+            <Link
+                :href="route('register')"
+                class="text-blue-500 hover:underline"
+                >Click to register</Link
+            >
+        </p>
     </GuestLayout>
 </template>

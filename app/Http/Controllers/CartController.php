@@ -48,17 +48,18 @@ class CartController extends Controller
                 $cart[$id]['quantity']--;
             }
         } else {
-            $catName = $request->category_name;
-            $bradName = $request->brand_name;
+
             $cart[$id] = [
                 'id' => $product->id,
                 'name' => $product->name,
                 'category_name' =>  $product->category->name,
                 'brand_name' =>  $product->brand->name,
+                'available_quantity' =>  $product->quantity,
                 'quantity' =>  1,
                 'price' => $product->price,
                 'image' => $product->image,
                 'description' => $product->description,
+                'message' => '',
 
             ];
         }

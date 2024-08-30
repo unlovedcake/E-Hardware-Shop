@@ -12,6 +12,7 @@ import { useToast } from "vue-toastification";
 import { Plus } from "@element-plus/icons-vue";
 import Swal from "sweetalert2";
 import { PlusCircleIcon } from "@heroicons/vue/24/solid";
+import { debounce } from "lodash";
 
 const toast = useToast();
 
@@ -199,14 +200,52 @@ let productUrl = computed(() => {
     url.searchParams.append("page", pageNumber.value);
 
     if (searchValue.value) {
-        url.searchParams.append("searchValue", searchValue.value);
         console.log("not empty ");
+
+        url.searchParams.append("searchValue", searchValue.value);
+        console.log("not emptys ");
     } else {
         console.log("empty");
     }
 
     return url;
 });
+
+let debounceTimer = null;
+
+watch(
+    () => productUrl.value,
+    (newValue) => {
+        console.log(newValue);
+
+        //Reset the checkbox
+        filterCategoryName.value = [];
+        filterBrandName.value = [];
+
+        if (debounceTimer) {
+            clearTimeout(debounceTimer);
+        }
+        debounceTimer = setTimeout(() => {
+            router.visit(newValue, {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+            });
+        }, 300); // 500ms delay
+    }
+);
+
+// async function searchProduct() {
+//     console.log("HOYS", searchValue.value);
+
+//     const response = await axios.get( route("product.index")
+
+//     );
+
+//     axios.get('/product', {
+//         params: { searchValue: searchValue.value }
+//       })
+// }
 
 const addProduct = () => {
     for (const image of productImages.value) {
@@ -231,7 +270,6 @@ const addProduct = () => {
 };
 
 const editButton = (product) => {
-    console.log("ki");
     isOpenUpdateModal.value = true;
     isImagesUpdate.value = true;
     //formProd.id = product;
@@ -429,23 +467,6 @@ const fetchBrandName = () => {
     form.brand_id = selectedBrandId.value;
 };
 
-watch(
-    () => productUrl.value,
-    (newValue) => {
-        console.log(newValue);
-
-        //Reset the checkbox
-        filterCategoryName.value = [];
-        filterBrandName.value = [];
-
-        router.visit(newValue, {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-        });
-    }
-);
-
 const openModalCreate = () => {
     isOpenCreateModal.value = true;
     isImagesUpdate.value = false;
@@ -506,6 +527,7 @@ const closeModal = () => {
                                     type="text"
                                     id="simple-search"
                                     v-model="searchValue"
+                                    @input="searchProduct"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                     placeholder="Search"
                                     required=""
@@ -755,12 +777,14 @@ const closeModal = () => {
                         Showing
                         <span
                             class="font-semibold text-gray-900 dark:text-white"
-                            >1-10</span
+                            >{{ products.current_page }}-{{
+                                products.per_page
+                            }}</span
                         >
                         of
                         <span
                             class="font-semibold text-gray-900 dark:text-white"
-                            >1000</span
+                            >{{ products.total }}</span
                         >
                     </span>
                     <Pagination class="mt-4" :links="products.links" />
